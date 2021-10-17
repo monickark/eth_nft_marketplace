@@ -3,6 +3,8 @@ import Footer from "./Footer";
 
 import Head from "next/head";
 
+import {siteTitle,siteDescription} from '../../config/config';
+
 const Layout = ({ children, title, description, ogImage, url }) => {
   // website Url
   const pageUrl =
@@ -15,7 +17,7 @@ const Layout = ({ children, title, description, ogImage, url }) => {
         <title>
           {title
             ? title
-            : "World Wide Tournaments"}
+            : siteTitle}
         </title>
         <meta
           name="description"
@@ -23,7 +25,7 @@ const Layout = ({ children, title, description, ogImage, url }) => {
           content={
             description
               ? description
-              : "World Wide Tournaments"
+              : siteDescription
           }
         />
         <meta
@@ -31,7 +33,7 @@ const Layout = ({ children, title, description, ogImage, url }) => {
           content={
             title
               ? title
-              : "World Wide Tournaments"
+              : siteTitle
           }
           key="og:title"
         />
@@ -46,7 +48,7 @@ const Layout = ({ children, title, description, ogImage, url }) => {
           content={
             description
               ? description
-              : "World Wide Tournaments"
+              : siteDescription
           }
           key="og:description"
         />

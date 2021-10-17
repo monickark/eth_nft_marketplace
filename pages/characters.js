@@ -7,7 +7,11 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import { useRouter } from "next/router";
 import CardElement from '../components/allcard';
+
+import CircularProgress from '@mui/material/CircularProgress';
 import axios from 'axios';
+//import {apiBaseUrl} from '../config/config';
+import { getAllCharacters } from '../api/Alldata';
 
 import { useState } from 'react'
 import { ethers } from 'ethers'
@@ -235,23 +239,23 @@ paddingRight: "0.75rem",
 
 const About = () => { 
 
-  const [nfts, setNfts] = useState([])
-  const [loadingState, setLoadingState] = useState('not-loaded')
   const classes = useStyles();
   const router = useRouter();
+  //let uniqueArray =[];
+  const [items, setItems] = React.useState([])
+  const [allitems, setAllitems] = React.useState([])
+  const [isCleared, setIsCleared] = React.useState(true);
+  const [isReady, setIsReady] = React.useState(false);
+  const [specialFilter, setSpecialFilter] = React.useState([]);
 
-  const [items, setItems]= React.useState([])
-  const [allitems, setAllitems]= React.useState([])
-  const [isCleared,setIsCleared]= React.useState(true)
+  const [nfts, setNfts] = useState([])
+  const [agrFiltersType, setAgrFiltersType] = React.useState([]);
+  const [agrFiltersLevel, setAgrFiltersLevel] = React.useState([]);
 
   React.useEffect(()=>{
-    loadNFTs()
     if(!router.isReady) return;
-
-      getOtherProductData();
-        //'https://laravel.worldwidetournaments.com/api/v1/products/36'
-   
-    // codes using router.query
+    loadNFTs()
+    getOtherProductData();
 
 }, [router.isReady]);
 
@@ -355,10 +359,11 @@ async function loadNFTs() {
       image: meta.data.image,
       name: meta.data.name
     }
+    console.log("item page: " + JSON.stringify(item));
     return item
   }))
   setNfts(items)
-  setLoadingState('loaded') 
+  // setLoadingState('loaded') 
 }
 
   return (

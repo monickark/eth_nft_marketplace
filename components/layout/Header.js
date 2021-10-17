@@ -1,7 +1,7 @@
 import Link from "components/Link";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
-
+import CloseIcon from '@mui/icons-material/Close';
 import { makeStyles, useTheme } from "@material-ui/core/styles";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
 import {
@@ -37,129 +37,12 @@ function ElevationScroll(props) {
   });
 }
 
-const useStyles = makeStyles((theme) => ({
-  toolbarMargin: {
-    ...theme.mixins.toolbar,
-    marginBottom: `5em`,
-    [theme.breakpoints.down("md")]: {
-      marginBottom: "4em",
-    },
-    [theme.breakpoints.down("xs")]: {
-      marginBottom: "2em",
-    },
-  },
-  logo: {
-    color: theme.palette.secondary.main,
-    width: "max-content",
-    fontSize: "1.5rem",
-  },
-  drawer: {
-    background:"#000",
-  },
-  drawerIconContainer: {
-    marginLeft: "auto",
-    padding: 0,
-    "&:hover": {
-      backgroundColor: "transparent",
-    },
-  },
-  drawerIcon: {
-    height: `50px`,
-    width: `50px`,
-    color: `#fff`,
-    [theme.breakpoints.down("xs")]: {
-      height: `40px`,
-      width: `40px`,
-    },
-  },
-  drawer: {
-    backgroundColor: theme.palette.secondary.main,
-    padding: "0 6em",
-  },
-
-  link: {
-    fontSize: "1em",
-    color: "#cd8080",
-    padding: "0.5rem 1rem",
-    "&:hover": {
-      color: "#fff",
-    },
-  },
-  headerLogo: {
-    '& img':{
-      width: "200px",
-      position: "absolute",
-      top: "10px",
-      left: "30px",
-    }
-  },
-  navbarSupportedContent:{
-    display: "flex !important",
-    flexBasis: "auto",
-    flexGrow: "1",
-    alignItems: "center",
-   
-  },
-  menuLinks: {
-color:"#fff",
-marginRight:"30px !important",
-margin: " 0 auto",
-gap: "7px",
-flexDirection: "row",
-marginBottom: "0 !important",
-display: "flex",
-paddingLeft: "0",
-listStyle: "none",
-},
-Headerbtns:{
-  background: "#000",
-  color: "#fff",
-  textDecoration: "none",
-  fontWeight:"bold",
-  padding: "10px 30px",
-  borderRadius: "30px",
-  textTransform: "uppercase",
-  marginRight: "10px",
-  [theme.breakpoints.down('sm')]: {
-    display: 'none',
-  },
-},
-loginBtn:{
-  background: "#e01212",
-  color: "#fff",
-  marginRight:"0",
-},
-appBar: {
-minHeight:"58px!important",
-background: "#990000",
-position: "relative",
-display: "flex",
-alignItems: "center",
-},
-mobLinksList:{
-  padding:"0!important",
-  margin:"0!important",
-},
-mobLinks:{
-  fontWeight:"bold",
-  borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
-  padding: "8px 0",
-  display: "block",
-  marginTop: "4px",
-  marginBottom: "4px",
-  paddingLeft: "16px",
-  paddingRight: "16px",
-  fontSize:"1rem",
-  
-},
-
-}));
-
 const Header = () => {
   const classes = useStyles();
   const theme = useTheme();
+  var icount = 0;
   const iOS = process.browser && /iPad|iPhone|iPod/.test(navigator.userAgent);
-  const matches = useMediaQuery(theme.breakpoints.down("sm"));
+  const matches = useMediaQuery(theme.breakpoints.down("md"));
 
   const [openDrawer, setOpenDrawer] = useState(false);
 
@@ -168,17 +51,17 @@ const Header = () => {
   const path = routes;
   const [isLoggedIn, setIsLoggedIn] = React.useState(false);
 
-  const handleLogout= async()=>{
-      localStorage.setItem('userAuthToken','');
-       router.push('/login', undefined, { shallow: true });
+  const handleLogout = async () => {
+    localStorage.setItem('userAuthToken', '');
+    router.push('/login', undefined, { shallow: true });
   }
 
   React.useEffect(() => {
-    if(localStorage.getItem('userAuthToken')) {
-       setIsLoggedIn(true);
-      
+    if (localStorage.getItem('userAuthToken')) {
+      setIsLoggedIn(true);
+
     }
-  },[]);
+  }, []);
 
 
 
@@ -186,7 +69,7 @@ const Header = () => {
     <>
       <Grid container justifyContent="flex-end">
         {path.map(({ name, link }) => (
-          <Grid item key={link}>
+          <Grid item key={icount++}>
             <Link href={link}>
               <Typography
                 className={classes.link}
@@ -208,10 +91,14 @@ const Header = () => {
         onClose={() => setOpenDrawer(false)}
         onOpen={() => setOpenDrawer(true)}
         classes={{ paper: classes.drawer }}
-        anchor="right"
+        anchor="left"
       >
-        <div className={classes.toolbarMargin} />
-        <List disablePadding>
+
+        <div className={classes.toolbarMargin0} />
+
+
+        <List disablePadding key={icount++}>
+          <Box className={classes.closeMenu} onClick={() => setOpenDrawer(false)} > <CloseIcon /> </Box>
           {path.map(({ name, link }) => (
             <ListItem
               key={link}
@@ -220,16 +107,13 @@ const Header = () => {
               onClick={() => {
                 setOpenDrawer(false);
               }}
+              key={icount++}
             >
-              <ListItemText disableTypography>
-                <Link href={link}>
+              <ListItemText disableTypography key={icount++}>
+                <Link href={link} className={classes.menuItemsMobile}>
                   <Typography
                     style={{
-                      color:
-                        router.pathname === link
-                          ? "primary"
-                          : "rgb(107 107 107)",
-                      fontWeight: router.pathname === link && "bold",
+                      color: "#fff",
                     }}
                   >
                     {name}
@@ -237,21 +121,21 @@ const Header = () => {
                 </Link>
               </ListItemText>
             </ListItem>
-            
-          ))}
-           <ListItem className={classes.mobLinksList}>
-              <ListItemText disableTypography>
-              <Link className={classes.mobLinks} href="/create"> Create  </Link>
-            {(isLoggedIn)?
 
-            <Link  className={classes.mobLinks} href="#" onClick={handleLogout}> Logout </Link> 
-              :
-            <Link  className={classes.mobLinks}   href="/login"> Login </Link> 
-            }
-              </ListItemText>
+          ))}
+          <ListItem className={classes.mobLinksList} key={icount++}>
+            <ListItemText disableTypography>
+              <Link className={classes.mobLinks} href="/create"> Create  </Link>
+              {(isLoggedIn) ?
+
+                <Link className={classes.mobLinks} href="#" onClick={handleLogout}> Logout </Link>
+                :
+                <Link className={classes.mobLinks} href="/login"> Login </Link>
+              }
+            </ListItemText>
           </ListItem>
         </List>
-       
+
       </SwipeableDrawer>
       <IconButton
         onClick={() => setOpenDrawer(!openDrawer)}
@@ -277,28 +161,28 @@ const Header = () => {
             }}
           >
             <>
-           
-            <Link href="/" className={classes.headerLogo}>
-            <img src="/images/wwt-logo.png" alt="logo" />
-            </Link>
-            <Grid item  className={classes.navbarSupportedContent}>
-            <Box className={classes.menuLinks}>
-            {matches ? drawer : tabs}
-            </Box>
-            <Box className={classes.rightHeaderbtn}>
-            <Link className={`${classes.Headerbtns} ${classes.createBtn}`} href="/create"> Create  </Link>
-            {(isLoggedIn)?
 
-            <Link  className={`${classes.Headerbtns} ${classes.loginBtn}`} href="#" onClick={handleLogout}> Logout </Link> 
-              :
-            <Link  className={`${classes.Headerbtns} ${classes.loginBtn}`}  href="/login"> Login </Link> 
-            }
-            </Box>
-            </Grid>
+              <Link href="/" className={classes.headerLogo}>
+                <img src="/images/wwt-logo.png" alt="logo" />
+              </Link>
+              <Grid item className={classes.navbarSupportedContent} key={icount++}>
+                <Box className={classes.menuLinks}>
+                  {matches ? drawer : tabs}
+                </Box>
+                <Box className={classes.rightHeaderbtn}>
+                  <Link className={`${classes.Headerbtns} ${classes.createBtn}`} href="/create"> Create  </Link>
+                  {(isLoggedIn) ?
 
-</>
-            
-            
+                    <Link className={`${classes.Headerbtns} ${classes.loginBtn}`} href="#" onClick={handleLogout}> Logout </Link>
+                    :
+                    <Link className={`${classes.Headerbtns} ${classes.loginBtn}`} href="/login"> Login </Link>
+                  }
+                </Box>
+              </Grid>
+
+            </>
+
+
           </Toolbar>
         </AppBar>
       </ElevationScroll>
@@ -307,4 +191,147 @@ const Header = () => {
     </>
   );
 };
+const useStyles = makeStyles((theme) => ({
+  toolbarMargin: {
+    ...theme.mixins.toolbar,
+    marginBottom: `5em`,
+    [theme.breakpoints.down("md")]: {
+      marginBottom: "4em",
+    },
+    [theme.breakpoints.down("xs")]: {
+      marginBottom: "2em",
+    },
+  },
+  logo: {
+    color: theme.palette.secondary.main,
+    width: "max-content",
+    fontSize: "1.5rem",
+  },
+  drawer: {
+    background: "#000",
+    '& ul': {
+      textAlign: "center",
+    },
+  },
+  drawerIconContainer: {
+    marginLeft: "auto",
+    padding: 0,
+    "&:hover": {
+      backgroundColor: "transparent",
+    },
+  },
+  drawerIcon: {
+    color: "rgba(0, 0, 0, 0.55)",
+    borderColor: "rgba(0, 0, 0, 0.1)",
+    fontSize: "1.25rem",
+    lineHeight: "1",
+
+  },
+  drawer: {
+    backgroundColor: theme.palette.secondary.main,
+    padding: "0 6em",
+  },
+
+  link: {
+    fontSize: "1em",
+    color: "#cd8080",
+    padding: "0.5rem 1rem",
+    "&:hover": {
+      color: "#fff",
+    },
+    [theme.breakpoints.down('md')]: {
+      color: '#fff',
+    },
+  },
+  headerLogo: {
+    '& img': {
+      width: "200px",
+      position: "absolute",
+      top: "10px",
+      left: "30px",
+    }
+  },
+  navbarSupportedContent: {
+    display: "flex !important",
+    flexBasis: "auto",
+    flexGrow: "1",
+    alignItems: "center",
+
+  },
+  menuLinks: {
+    color: "#fff",
+    marginRight: "30px !important",
+    margin: " 0 auto",
+    gap: "7px",
+    flexDirection: "row",
+    marginBottom: "0 !important",
+    display: "flex",
+    paddingLeft: "0",
+    listStyle: "none",
+    [theme.breakpoints.down('md')]: {
+      marginRight: '0px !important',
+    },
+  },
+  Headerbtns: {
+    background: "#000",
+    color: "#fff",
+    textDecoration: "none",
+    fontWeight: "bold",
+    padding: "10px 30px",
+    borderRadius: "30px",
+    textTransform: "uppercase",
+    marginRight: "10px",
+    [theme.breakpoints.down('md')]: {
+      display: 'none',
+    },
+  },
+  loginBtn: {
+    background: "#e01212",
+    color: "#fff",
+    marginRight: "0",
+  },
+  appBar: {
+    minHeight: "58px!important",
+    background: "#990000",
+    position: "relative",
+    display: "flex",
+    alignItems: "center",
+  },
+  mobLinksList: {
+    padding: "0!important",
+    margin: "0!important",
+  },
+  mobLinks: {
+    borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
+    padding: "8px 0",
+    display: "block",
+    marginTop: "4px",
+    marginBottom: "4px",
+    paddingLeft: "16px",
+    paddingRight: "16px",
+    fontSize: "1rem",
+    color: "#fff",
+    textAlign: "center",
+
+  },
+  drawer: {
+    background: "#000",
+    width: "100%",
+    color: "#fff",
+  },
+  menuItemsMobile: {
+    textAlign: "center",
+  },
+  closeMenu: {
+    color: "#fff",
+    fontSize: "45px",
+    float: "right",
+    padding: "0",
+    paddingRight: "21px",
+    '& svg': {
+      fontSize: "34px",
+    }
+  }
+
+}));
 export default Header;
