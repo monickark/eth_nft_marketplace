@@ -357,7 +357,8 @@ async function loadNFTs() {
       seller: i.seller,
       owner: i.owner,
       image: meta.data.image,
-      name: meta.data.name
+      name: meta.data.name,
+      ability: meta.data.ability
     }
     console.log("item page: " + JSON.stringify(item));
     return item

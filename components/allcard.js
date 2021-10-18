@@ -32,8 +32,8 @@ export default function CardElement({ data, ik }) { //({ data, currentAddress, t
               <Typography variant="h1" className={classes.chTitle}>{(data.name) ? data.name : ''}</Typography>
             </Link>
             <p className={classes.chAuthor}>by admin</p>
-            <Button variant="contained" className={classes.chLevel}>Level {(data.level_value) ? data.level_value : ''} </Button>
-            <Button variant="contained" className={classes.chFire}>{(data.name_of_class) ? data.name_of_class : ''}</Button>
+            <Button variant="contained" className={classes.chLevel}>Level {(data.level) ? data.level : ''} </Button>
+            <Button variant="contained" className={classes.chFire}>{(data.ability) ? data.ability : ''}</Button>
           </Box>
 
           <Box className={classes.charCardRight}>

@@ -57,14 +57,14 @@ const About = () => {
     if (!name || !ability || !story || !price || !level || !fileUrl) return
     /* first, upload to IPFS */
     const data = JSON.stringify({
-      name, ability, story, level, image: fileUrl
+      name, ability, story, level, ability, image: fileUrl
     })
     console.log("data: " + data);
+    console.log("");
     try {
       console.log("inside file upload");
       const added = await client.add(data)
       const url = `https://ipfs.infura.io/ipfs/${added.path}`
-      /* after file is uploaded to IPFS, pass the URL to save it on Polygon */
       console.log("url: " + url);
       createSale(url)
     } catch (error) {
@@ -157,7 +157,8 @@ const About = () => {
 
       <FormControl fullWidth sx={{ m: 1 }} className={classes.formCon}>
       <FormLabel component="legend" className={classes.formLabel}>Level*</FormLabel>
-         <NativeSelect inputProps={{ name: 'Level', id: 'uncontrolled-native', }}  className={classes.formFieldText}>
+         <NativeSelect inputProps={{ name: 'Level', id: 'uncontrolled-native', }}  className={classes.formFieldText}
+          onChange={e => updateFormInput({ ...formInput, level: e.target.value })}>
             <option value="">Select</option>
             <option value={1}>Level 1</option>
             <option value={2}>Level 2</option>
