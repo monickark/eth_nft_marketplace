@@ -21,14 +21,14 @@ export default function CardElement({ data, ik }) { //({ data, currentAddress, t
             <img src={(data && data.product_image_url != "") ? data.product_image_url : "/images/proimg.jpg"} />
           </Link> */}
 
-<Link className={classes.chaLink} href={data.image}> 
+<Link className={classes.chaLink} href={`/character/${((data.name) ? data.tokenId : '')}`}> 
             <img src={(data && data.image!="")?data.image:"test"} />
             </Link>
 
         </Box>
         <Box className={classes.charCardContent}>
           <Box className={classes.charCardLeft}>
-            <Link className={classes.chaLink} href={`/character/${((data.name) ? data.id : '')}`}>
+            <Link className={classes.chaLink} href={`/character/${((data.name) ? data.tokenId : '')}`}>
               <Typography variant="h1" className={classes.chTitle}>{(data.name) ? data.name : ''}</Typography>
             </Link>
             <p className={classes.chAuthor}>by admin</p>

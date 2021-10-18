@@ -13,7 +13,14 @@ import { useRouter } from "next/router";
 import axios from 'axios';
 import AliceCarousel from 'react-alice-carousel';
 import 'react-alice-carousel/lib/alice-carousel.css';
-import CardElement from '../../components/card'
+import { ethers } from 'ethers'
+import { create as ipfsHttpClient } from 'ipfs-http-client'
+import Web3Modal from 'web3modal'
+
+const client = ipfsHttpClient('https://ipfs.infura.io:5001/api/v0');
+
+import NFT from '../../build/contracts/NFT.json';
+import NFTMarket from '../../build/contracts/NFTMarket.json';
 
 const useStyles = makeStyles((theme) => ({
   btn: {
@@ -273,124 +280,108 @@ moreProducts: {
 const About = () => {
     
   const classes = useStyles();
-   const router = useRouter();
+  const router = useRouter();
 
-  const [cdata, setCdata]= React.useState({})
   const [items, setItems]= React.useState([])
+  const [marketData, setMarketData]= React.useState([])
 
   React.useEffect(()=>{
     if(!router.isReady) return;
     const { pid } = router.query;
     if(router.query.pid) {
-      getProductData(router.query.pid);
-
       getOtherProductData(router.query.pid);
-        //'https://laravel.worldwidetournaments.com/api/v1/products/36'
     }
-    // codes using router.query
 
 }, [router.isReady]);
 
-const getProductData = async(pid) => {
-  let authToken = localStorage.getItem('userAuthToken');
-  let API_URL = 'https://laravel.worldwidetournaments.com/api/v1/';
- // e.preventDefault();
-  //  setLoginError('');
-    const headers = {
-        "Content-Type" : `multipart/form-data`,
-        "Authorization":"Bearer " + authToken
-    };
-
-try { 
-    let result = await axios( {
-        method:'get',
-        url: 'products/'+pid,
-        baseURL: API_URL,
-        headers: headers,
-    } );
-
-    let response = (result)?result.data:'';
-    console.log(response);
-    if(response && response.results && response.results.character){
-        console.log("Fetched Successful");
-        var characterdata = response.results.character;
-        console.log(characterdata);
-        setCdata(characterdata)
-    } else {
-        // router.push('/', undefined, { shallow: true });
-    }
-   } catch (err) {
-    console.log(err);
-     //router.push('/', undefined, { shallow: true });
-   }
-}
-
 const getOtherProductData = async(pid) => {
   let authToken = localStorage.getItem('userAuthToken');
-  let API_URL = 'https://laravel.worldwidetournaments.com/api/v1/';
- // e.preventDefault();
-  //  setLoginError('');
     const headers = {
         "Content-Type" : `multipart/form-data`,
         "Authorization":"Bearer " + authToken
     };
 
-try { 
-    let result = await axios( {
-        method:'get',
-        url: 'products',
-        baseURL: API_URL,
-        headers: headers,
-    } );
-
-    let response = (result)?result.data:'';
-    console.log(response);
-    if(response && response.results && response.results.characters){
-        console.log("Fetched Successful");
-        var characterdata = response.results.characters;
-        //console.log(characterdata);
-        //setCdata(characterdata)
-        var itemdata = [];
-        characterdata.forEach(function(v) {
-           var idata =  <CardElement data={v} />
-         // <div><img src={v.product_image_url} onDragStart={handleDragStart} role="presentation" /><div>{v.name}</div></div>;
-          itemdata.push(idata);
-        })
-        setItems(itemdata);
-        console.log(itemdata);
-    } else {
-        // router.push('/', undefined, { shallow: true });
-    }
-   } catch (err) {
-    console.log(err);
-     //router.push('/', undefined, { shallow: true });
-   }
+    console.log("inside loadNFT");
+    const web3Modal = new Web3Modal()
+    const connection = await web3Modal.connect()
+    const provider = await new ethers.providers.Web3Provider(connection)    
+    const signer = await provider.getSigner()
+    const network = await provider.getNetwork()
+    console.log("network : "+ network.chainId);
+    console.log("Signer : "+ signer);
+    console.log("Address : "+   NFT.networks[network.chainId].address);
+    console.log("ABI : "+ NFT.abi); 
+      
+    const marketContract = new ethers.Contract(NFTMarket.networks[network.chainId].address, NFTMarket.abi, signer)
+    const tokenContract = new ethers.Contract(NFT.networks[network.chainId].address, NFT.abi, provider)
+    const marketData = await marketContract.idToMarketItem(pid) 
+    console.log("marketData: " + JSON.stringify(marketData));   
+    const tokenUri = await tokenContract.tokenURI(pid)
+    const meta = await axios.get(tokenUri)
+    console.log("meta: " + JSON.stringify(meta));   
+      let data = {
+        tokenId:  marketData.tokenId.toNumber(),
+        seller:  marketData.seller,
+        owner:  marketData.owner,
+        image: meta.data.image,
+        name: meta.data.name,
+        ability: meta.data.ability,
+        price: meta.data.price,
+        type: meta.data.type,
+        level: meta.data.level,
+        story: meta.data.story
+      }
+      console.log("item page: " + JSON.stringify(data));
+      setMarketData(data);
 }
 
-const handleDragStart = (e) => e.preventDefault();
-
-// const items = [
-//   <img src="/images/proimg.jpg" onDragStart={handleDragStart} role="presentation" />,
-//   <img src="/images/proimg.jpg" onDragStart={handleDragStart} role="presentation" />,
-//   <img src="/images/proimg.jpg" onDragStart={handleDragStart} role="presentation" />,
-// ];
+const getToken = async(pid) => {
+    let authToken = localStorage.getItem('userAuthToken');
+      const headers = {
+          "Content-Type" : `multipart/form-data`,
+          "Authorization":"Bearer " + authToken
+      };
+  
+      console.log("inside loadNFT");
+      const web3Modal = new Web3Modal()
+      const connection = await web3Modal.connect()
+      const provider = await new ethers.providers.Web3Provider(connection)    
+      const signer = await provider.getSigner()
+      const network = await provider.getNetwork()
+      console.log("network : "+ network.chainId);
+      console.log("Signer : "+ signer);
+      console.log("Address : "+   NFT.networks[network.chainId].address);
+      console.log("ABI : "+ NFT.abi); 
+        
+      const marketContract = new ethers.Contract(NFTMarket.networks[network.chainId].address, NFTMarket.abi, signer)
+      const tokenContract = new ethers.Contract(NFT.networks[network.chainId].address, NFT.abi, provider)
+      const marketData = await marketContract.idToMarketItem(pid) 
+     
+      console.log("marketData: " + JSON.stringify(marketData));   
+      const tokenUri = await tokenContract.tokenURI(pid)
+      const meta = await axios.get(tokenUri)
+      console.log("meta: " + JSON.stringify(meta));   
+        let data = {
+          tokenId:  marketData.tokenId.toNumber(),
+          seller:  marketData.seller,
+          owner:  marketData.owner,
+          image: meta.data.image,
+          name: meta.data.name,
+          ability: meta.data.ability,
+          price: meta.data.price,
+          type: meta.data.type,
+          level: meta.data.level,
+          story: meta.data.story
+        }
+        console.log("item page: " + JSON.stringify(data));
+        setMarketData(data);
+  }
 
 const responsive = {
     0: { items: 1 },
     568: { items: 2 },
     1024: { items: 4 },
 };
-
-// const items = [
-//     <div><img src="/images/proimg.jpg" onDragStart={handleDragStart} role="presentation" /><div>Hello world</div></div>,
-//     <img src="/images/proimg.jpg" onDragStart={handleDragStart} role="presentation" />,
-//     <img src="/images/proimg.jpg" onDragStart={handleDragStart} role="presentation" />,
-//     <img src="/images/proimg.jpg" onDragStart={handleDragStart} role="presentation" />,
-//     <img src="/images/proimg.jpg" onDragStart={handleDragStart} role="presentation" />,
-//     <img src="/images/proimg.jpg" onDragStart={handleDragStart} role="presentation" />,
-
-// ];
-
 
   return (
     <>
@@ -400,7 +391,7 @@ const responsive = {
    
        <Box   className={classes.charMainInfo}>
             <Grid item xs={6} className={classes.charMainImg}>
-               <img src={(cdata && cdata.product_image_url!="")?cdata.product_image_url:"/images/proimg.jpg"} alt="test" className={classes.characterFirstimg}/>
+                   <img src={(marketData && marketData.image!="")?marketData.image:"test"} />
             </Grid>
 
             <Grid item xs={6} className={classes.charContent}>
@@ -420,7 +411,7 @@ const responsive = {
                 </List>
                 </Box>
                 <Box  className={classes.developersParaTwo} >
-                <Typography variant="h1" className={classes.devloperTitle}>{(cdata && cdata.name)?cdata.name:''}</Typography>
+                <Typography variant="h1" className={classes.devloperTitle}>{(marketData &&  marketData.name)? marketData.name:''}</Typography>
 
                 <List className={classes.devloperBadges}>
                 <ListItem >
@@ -428,17 +419,17 @@ const responsive = {
                 </ListItem>
 
                 <ListItem >
-                <Box className={`${classes.badgeYellow} ${classes.dBadges}`} >{(cdata && cdata.name_of_class)?cdata.name_of_class:''}</Box> 
+                <Box className={`${classes.badgeYellow} ${classes.dBadges}`} >{(marketData &&  marketData.ability)? marketData.ability:''}</Box> 
                 </ListItem>
                 <ListItem >
-                <Box className={`${classes.badgeGray} ${classes.dBadges}`} >Level {(cdata && cdata.level_value)?cdata.level_value:''} </Box> 
+                <Box className={`${classes.badgeGray} ${classes.dBadges}`} >Level {(marketData &&  marketData.level)? marketData.level:''} </Box> 
                 </ListItem>
                 </List>
 
                 </Box>
 
                 <Box  className={classes.developersParaThree} >
-                 <p>{(cdata && cdata.description)?cdata.description:''}</p>
+                 <p>{(marketData &&  marketData.type)? marketData.type:''}</p>
 
                 </Box>
 
@@ -451,7 +442,7 @@ const responsive = {
                     </ListItem>
 
                     <ListItem >
-                       <LocalFireDepartmentIcon /> Spcial Powers: {(cdata && cdata.special_powers)?cdata.special_powers:''}
+                       <LocalFireDepartmentIcon /> Spcial Powers: {(marketData &&  marketData.ability)? marketData.ability:''}
                     </ListItem>
 
                     </List>
@@ -470,12 +461,11 @@ const responsive = {
                 </Box>
                 <Box  className={classes.developersParaFour} >
                     <Box className={classes.pPrice}> 
-                    <img src="/images/ethereum.svg" />  {(cdata && cdata.price)?cdata.price:''} <span>($0)</span>
-                    
+                    <img src="/images/ethereum.svg" />  {(marketData &&  marketData.price)?  marketData.price:''} <span>($0)</span>                    
                     </Box>
                     <List className={classes.descBtns}>
                       <ListItem >
-                        <Link className={`${classes.descBtn} ${classes.buynowBtn}`} href="#">Buy Now</Link> 
+                        <Link className={`${classes.descBtn} ${classes.buynowBtn}`} href="">Buy Now</Link> 
                       </ListItem>
                       <ListItem >
                         <Link className={`${classes.descBtn} ${classes.addfaceBtn}`} href="#">Add Your Face</Link> 
@@ -487,8 +477,7 @@ const responsive = {
                 </Box>
                 <Box  className={classes.developersParaFive} >
                     <p> <img src="/images/verifiedbadge.svg" /></p>
-                    <p> Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s </p>
-
+                    <p>{(marketData &&  marketData.story)? marketData.story:''}</p>
 
                 </Box>
                 

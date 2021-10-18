@@ -52,12 +52,12 @@ const About = () => {
  
   async function createMarket() {
     console.log("inside create market");
-    const { name, ability, story, price, level } = formInput;
-    console.log("name: " + name + " ability: " + ability + " story: "+ story + " price:" + price + " level:" + level + " fileUrl :" + fileUrl );
-    if (!name || !ability || !story || !price || !level || !fileUrl) return
+    const { name, ability, story, price, type, level } = formInput;
+    console.log("name: " + name + " ability: " + ability + " story: "+ story + " price:" + type + " type:" + price + " level:" + level + " fileUrl :" + fileUrl );
+    if (!name || !ability || !story || !price || !type || !level || !fileUrl) return
     /* first, upload to IPFS */
     const data = JSON.stringify({
-      name, ability, story, level, ability, image: fileUrl
+      name, ability, story, level, price, type, ability, image: fileUrl
     })
     console.log("data: " + data);
     console.log("");
