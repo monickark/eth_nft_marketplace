@@ -22,6 +22,18 @@ const About = () => {
   const [formInput, updateFormInput] = useState({ price: '', name: '', description: '' })
   const classes = useStyles();
   const router = useRouter();
+  const [showForm, setShowForm] = React.useState(false);
+  React.useEffect(() => {
+    if (!router.isReady) return;
+    let authToken = localStorage.getItem('userAuthToken');
+    if (!authToken) {
+       localStorage.setItem('redirecto', '/create');
+      router.push('/login', undefined, { shallow: true });
+    } else {
+    setShowForm(true);
+    }
+  }, [router.isReady]);
+
   async function onChange(e) {
     const file = e.target.files[0]
     try {
@@ -40,12 +52,12 @@ const About = () => {
  
   async function createMarket() {
     console.log("inside create market");
-    const { name, ability, story, price } = formInput;
-    console.log("name: " + name + " ability: " + ability + " story: "+ story + " price:" + price + "fileUrl :" + fileUrl );
-    if (!name || !ability || !story || !price || !fileUrl) return
+    const { name, ability, story, price, level } = formInput;
+    console.log("name: " + name + " ability: " + ability + " story: "+ story + " price:" + price + " level:" + level + " fileUrl :" + fileUrl );
+    if (!name || !ability || !story || !price || !level || !fileUrl) return
     /* first, upload to IPFS */
     const data = JSON.stringify({
-      name, ability, story, image: fileUrl
+      name, ability, story, level, image: fileUrl
     })
     console.log("data: " + data);
     try {
