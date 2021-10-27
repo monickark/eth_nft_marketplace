@@ -11,6 +11,7 @@ import { ethers } from 'ethers'
 import { create as ipfsHttpClient } from 'ipfs-http-client'
 import { useRouter } from 'next/router'
 import Web3Modal from 'web3modal'
+import NProgress from 'nprogress'; 
 
 const client = ipfsHttpClient('https://ipfs.infura.io:5001/api/v0')
 
@@ -19,10 +20,24 @@ import NFTMarket from '../build/contracts/NFTMarket.json';
 
 const About = () => {  
   const [fileUrl, setFileUrl] = useState(null)
+  const [btnTxt, setBtnTxt] = useState(null)
   const [formInput, updateFormInput] = useState({ price: '', name: '', description: '' })
   const classes = useStyles();
   const router = useRouter();
   const [showForm, setShowForm] = React.useState(false);
+
+  const [isProcessing, setIsProcessing] = React.useState(false);
+  const [sendBtnText, setSendBtnText] = React.useState('CREATE MY CHARACTER');
+
+  const [charImageErr, setCharImageErr] = React.useState('');
+  const [charImage, setCharImage] = React.useState('');
+  const [cnameErr, setCnameErr] = React.useState('');
+  const [abilitiesErr, setAbilitiesErr] = React.useState('');
+  const [storyErr, setStoryErr] = React.useState('');
+  const [typeofErr, setTypeofErr] = React.useState('');
+  const [levelErr, setLevelErr] = React.useState('');
+  const [isSuccess, setIsSuccess] = React.useState('');
+
   React.useEffect(() => {
     if (!router.isReady) return;
     let authToken = localStorage.getItem('userAuthToken');
@@ -31,6 +46,7 @@ const About = () => {
       router.push('/login', undefined, { shallow: true });
     } else {
     setShowForm(true);
+    setBtnTxt("CREATE MY CHARACTER");
     }
   }, [router.isReady]);
 
@@ -45,13 +61,17 @@ const About = () => {
       )
       const url = `https://ipfs.infura.io/ipfs/${added.path}`
       setFileUrl(url)
+      console.log("url: " + url);
     } catch (error) {
       console.log('Error uploading file: ', error)
     }  
   }
  
   async function createMarket() {
+
     console.log("inside create market");
+    
+  //  handleCreateCharacter();
     const { name, ability, story, price, type, level } = formInput;
     console.log("name: " + name + " ability: " + ability + " story: "+ story + " price:" + type + " type:" + price + " level:" + level + " fileUrl :" + fileUrl );
     if (!name || !ability || !story || !price || !type || !level || !fileUrl) return
@@ -74,6 +94,7 @@ const About = () => {
 
   async function createSale(url) {
     console.log("Create sale : ");
+    setBtnTxt("PROCESSING...");
     const web3Modal = new Web3Modal()
     const connection = await web3Modal.connect()
     const provider = await new ethers.providers.Web3Provider(connection)    
@@ -107,8 +128,90 @@ const About = () => {
     transaction = await contract.createMarketItem(NFT.networks[network.chainId].address,
        tokenId, price, { value: listingPrice })
     await transaction.wait()
+
     router.push('/characters')
   }
+
+  // const handleCreateCharacter = async () => {
+  //   console.log("hi......")
+  //   let authToken = localStorage.getItem('userAuthToken');
+  //   if (authToken) {
+  //     console.log("inside auth......")
+  //     var isFormError = false;
+
+  //     if (charImage == "") {
+  //       isFormError = true;
+  //       setCharImageErr('Invalid character image')
+  //     }
+  //     if (values.cname == "") {
+  //       isFormError = true;
+  //       setCnameErr('Invalid character name')
+  //     }
+  //     if (values.story == "") {
+  //       isFormError = true;
+  //       setStoryErr('Invalid story')
+  //     }
+  //     if (values.abilities == "") {
+  //       isFormError = true;
+  //       setAbilitiesErr('Invalid abilities')
+  //     }
+  //     if (values.typeof == "") {
+  //       isFormError = true;
+  //       setTypeofErr('Invalid type of')
+  //     }
+  //     if (values.level == "") {
+  //       isFormError = true;
+  //       setLevelErr('Invalid level')
+  //     }
+
+  //     if (isFormError) {
+  //       setSendBtnText('CREATE MY CHARACTER');
+  //       setIsProcessing(false);
+  //       return false;
+  //     }
+  //     else {
+  //       let data = new FormData();
+  //       data.append('product_image', charImage);
+  //       data.append('name', values.cname);
+  //       data.append('description', values.story);
+  //       data.append('special_powers', values.abilities);
+  //       data.append('name_of_class', values.typeof);
+  //       data.append('level_value', values.level);
+  //       var response = await createCharacter(data);
+  //       if (response.success) {
+  //         setIsSuccess('Character saved successfully.');
+  //         setValues({ cname: '', abilities: '', story: '', typeof: '', level: '', ftype: '', alltype: '' });
+  //       } else {
+  //         if (response.response && response.response.data) {
+  //           var geterrors = response.response.data.errors;
+  //           if (geterrors.product_image) {
+  //             setCharImageErr(geterrors.product_image)
+  //           }
+  //           if (geterrors.name) {
+  //             setCnameErr(geterrors.name)
+  //           }
+  //           if (geterrors.description) {
+  //             setAbilitiesErr(geterrors.description)
+  //           }
+  //           if (geterrors.special_powers) {
+  //             setStoryErr(geterrors.special_powers)
+  //           }
+  //           if (geterrors.name_of_class) {
+  //             setTypeofErr(geterrors.name_of_class)
+  //           }
+  //           if (geterrors.level_value) {
+  //             setLevelErr(geterrors.level_value)
+  //           }
+  //           console.log(geterrors);
+
+  //         }
+  //       }
+
+  //     }
+  
+  // }
+
+  // }
   return (
     <Layout>
     <Container className={classes.customContainer}>
@@ -178,7 +281,7 @@ const About = () => {
          <Checkbox  name="All"  className={classes.formConButton} /> All</Box>
       </FormControl>
       <FormControl fullWidth sx={{ m: 1 }} className={classes.formConBtn}>
-      <Button onClick={createMarket} className={classes.formSubmitBtn} >CREATE MY CHARACTER</Button>
+      <Button onClick={createMarket} className={classes.formSubmitBtn} >{btnTxt}</Button>
       </FormControl>
       </Box>
 

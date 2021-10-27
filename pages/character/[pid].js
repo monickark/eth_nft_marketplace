@@ -284,12 +284,15 @@ const About = () => {
 
   const [items, setItems]= React.useState([])
   const [marketData, setMarketData]= React.useState([])
+  const [tokenId, setTokenId]= React.useState([])
+  const [itemprice, setPrice]= React.useState([])
 
   React.useEffect(()=>{
     if(!router.isReady) return;
     const { pid } = router.query;
     if(router.query.pid) {
       getOtherProductData(router.query.pid);
+      setTokenId(pid);
     }
 
 }, [router.isReady]);
@@ -301,7 +304,7 @@ const getOtherProductData = async(pid) => {
         "Authorization":"Bearer " + authToken
     };
 
-    console.log("inside loadNFT");
+    console.log("inside loadNFT"+ pid);
     const web3Modal = new Web3Modal()
     const connection = await web3Modal.connect()
     const provider = await new ethers.providers.Web3Provider(connection)    
@@ -314,11 +317,13 @@ const getOtherProductData = async(pid) => {
       
     const marketContract = new ethers.Contract(NFTMarket.networks[network.chainId].address, NFTMarket.abi, signer)
     const tokenContract = new ethers.Contract(NFT.networks[network.chainId].address, NFT.abi, provider)
-    const marketData = await marketContract.idToMarketItem(pid) 
+    const marketData = await marketContract.idToMarketItem(0); 
     console.log("marketData: " + JSON.stringify(marketData));   
     const tokenUri = await tokenContract.tokenURI(pid)
     const meta = await axios.get(tokenUri)
-    console.log("meta: " + JSON.stringify(meta));   
+    console.log("meta: " + JSON.stringify(meta)); 
+    setPrice(meta.data.price);
+
       let data = {
         tokenId:  marketData.tokenId.toNumber(),
         seller:  marketData.seller,
@@ -335,53 +340,37 @@ const getOtherProductData = async(pid) => {
       setMarketData(data);
 }
 
-const getToken = async(pid) => {
-    let authToken = localStorage.getItem('userAuthToken');
-      const headers = {
-          "Content-Type" : `multipart/form-data`,
-          "Authorization":"Bearer " + authToken
-      };
-  
-      console.log("inside loadNFT");
-      const web3Modal = new Web3Modal()
-      const connection = await web3Modal.connect()
-      const provider = await new ethers.providers.Web3Provider(connection)    
-      const signer = await provider.getSigner()
-      const network = await provider.getNetwork()
-      console.log("network : "+ network.chainId);
-      console.log("Signer : "+ signer);
-      console.log("Address : "+   NFT.networks[network.chainId].address);
-      console.log("ABI : "+ NFT.abi); 
-        
-      const marketContract = new ethers.Contract(NFTMarket.networks[network.chainId].address, NFTMarket.abi, signer)
-      const tokenContract = new ethers.Contract(NFT.networks[network.chainId].address, NFT.abi, provider)
-      const marketData = await marketContract.idToMarketItem(pid) 
-     
-      console.log("marketData: " + JSON.stringify(marketData));   
-      const tokenUri = await tokenContract.tokenURI(pid)
-      const meta = await axios.get(tokenUri)
-      console.log("meta: " + JSON.stringify(meta));   
-        let data = {
-          tokenId:  marketData.tokenId.toNumber(),
-          seller:  marketData.seller,
-          owner:  marketData.owner,
-          image: meta.data.image,
-          name: meta.data.name,
-          ability: meta.data.ability,
-          price: meta.data.price,
-          type: meta.data.type,
-          level: meta.data.level,
-          story: meta.data.story
-        }
-        console.log("item page: " + JSON.stringify(data));
-        setMarketData(data);
+const buyItem = async (price) => {
+   console.log("buy item..." + tokenId)
+   console.log("buy item..." + price)
+   const web3Modal = new Web3Modal()
+    const connection = await web3Modal.connect()
+    const provider = await new ethers.providers.Web3Provider(connection)    
+    const signer = await provider.getSigner()
+    const network = await provider.getNetwork()
+    console.log("network : "+ network.chainId);
+    console.log("Signer : "+ signer);
+    console.log("Address : "+   NFT.networks[network.chainId].address);
+    console.log("ABI : "+ NFT.abi); 
+    
+    const marketContract = new ethers.Contract(NFTMarket.networks[network.chainId].address, NFTMarket.abi, signer)
+    const marketData = await marketContract.idToMarketItem(tokenId) 
+    console.log("market data : "+ JSON.stringify(marketData))
+    console.log("Price : "+ marketData.price);
+    console.log("tokenId : "+ tokenId);
+    const transaction = await marketContract.createMarketSale(NFT.networks[network.chainId].address, tokenId, {
+        value: marketData.price
+      })
   }
+
 
 const responsive = {
     0: { items: 1 },
     568: { items: 2 },
     1024: { items: 4 },
 };
+
+
 
   return (
     <>
@@ -465,7 +454,7 @@ const responsive = {
                     </Box>
                     <List className={classes.descBtns}>
                       <ListItem >
-                        <Link className={`${classes.descBtn} ${classes.buynowBtn}`} href="">Buy Now</Link> 
+                        <Button className={`${classes.descBtn} ${classes.buynowBtn}`} onClick={() => buyItem(marketData.tokenId, marketData.price)} >Buy Now</Button> 
                       </ListItem>
                       <ListItem >
                         <Link className={`${classes.descBtn} ${classes.addfaceBtn}`} href="#">Add Your Face</Link> 
