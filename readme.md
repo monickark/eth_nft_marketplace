@@ -119,8 +119,3 @@ market.createMarketSale(nftAddress, tokenId, { value: price });
 /public           # Assets & images
 ```
 
----
-
-## 📜 License
-
-MIT License © 2025 Monicka Ruthrakumaran
